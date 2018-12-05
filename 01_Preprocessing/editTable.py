@@ -22,68 +22,81 @@ dataapp = pd.read_csv("diabetes_dataset.csv")
 # insulinMean = sum(insulin)/197
 # bmiMean = sum(bmi)/197
 # -------------------------------------------------
-glucose = [[], []]
-bloodP = [[], []]
-skinT = [[], []]
-insulin = [[], []]
-bmi = [[], []]
-
-for index, row in dataapp.iterrows():
-    if not math.isnan(row["Glucose"]):
-        glucose[int(row["Outcome"])] += [row["Glucose"]]
-    if not math.isnan(row["BloodPressure"]):
-        bloodP[int(row["Outcome"])] += [row["BloodPressure"]]
-    if not math.isnan(row["SkinThickness"]):
-        skinT[int(row["Outcome"])] += [row["SkinThickness"]]
-    if not math.isnan(row["Insulin"]):
-        insulin[int(row["Outcome"])] += [row["Insulin"]]
-    if not math.isnan(row["BMI"]):
-        bmi[int(row["Outcome"])] += [row["BMI"]]
-
-g = {}
-b = {}
-s = {}
-ins = {}
-bm = {}
-for i in range(2):
-    g[i] = sum(glucose[i]) / len(glucose[i])
-    b[i] = sum(bloodP[i]) / len(bloodP[i])
-    s[i] = sum(skinT[i]) / len(skinT[i])
-    ins[i] = sum(insulin[i]) / len(insulin[i])
-    bm[i] = sum(bmi[i]) / len(bmi[i])
-
+# ----------------- Média separada por outcome -------------------
+# glucose = [[], []]
+# bloodP = [[], []]
+# skinT = [[], []]
+# insulin = [[], []]
+# bmi = [[], []]
+#
+# for index, row in dataapp.iterrows():
+#     if not math.isnan(row["Glucose"]):
+#         glucose[int(row["Outcome"])] += [row["Glucose"]]
+#     if not math.isnan(row["BloodPressure"]):
+#         bloodP[int(row["Outcome"])] += [row["BloodPressure"]]
+#     if not math.isnan(row["SkinThickness"]):
+#         skinT[int(row["Outcome"])] += [row["SkinThickness"]]
+#     if not math.isnan(row["Insulin"]):
+#         insulin[int(row["Outcome"])] += [row["Insulin"]]
+#     if not math.isnan(row["BMI"]):
+#         bmi[int(row["Outcome"])] += [row["BMI"]]
+#
+# g = {}
+# b = {}
+# s = {}
+# ins = {}
+# bm = {}
+# for i in range(2):
+#     g[i] = sum(glucose[i]) / len(glucose[i])
+#     b[i] = sum(bloodP[i]) / len(bloodP[i])
+#     s[i] = sum(skinT[i]) / len(skinT[i])
+#     ins[i] = sum(insulin[i]) / len(insulin[i])
+#     bm[i] = sum(bmi[i]) / len(bmi[i])
+# -------------------------------------------------
+# ----------------- Média do menor e maior valor -------------------
+glucoseMedia = (dataapp['Glucose'].min() + dataapp['Glucose'].max()) / 2
+bloodPMedia = (dataapp['BloodPressure'].min() + dataapp['BloodPressure'].max()) / 2
+skinTMedia = (dataapp['SkinThickness'].min() + dataapp['SkinThickness'].max()) / 2
+insulinMedia = (dataapp['Insulin'].min() + dataapp['Insulin'].max()) / 2
+bminMedia = (dataapp['BMI'].min() + dataapp['BMI'].max()) / 2
+# -------------------------------------------------
 
 dataset = pd.read_csv("diabetes_dataset.csv")
 for index, row in dataset.iterrows():
     if math.isnan(row["Glucose"]):
-        dataset.loc[index, 'Glucose'] = g[int(row["Outcome"])]
-        # element = randrange(0, 571)
+        dataset.loc[index, 'Glucose'] = randrange(int(dataapp['Glucose'].min()), int(dataapp['Glucose'].max()))
+        # dataset.loc[index, 'Glucose'] = g[int(row["Outcome"])]
+        # element = randrange(0, 572)
         # while math.isnan(dataset.loc[element, 'Glucose']):
-        #     element = randrange(0, 571)
+        #     element = randrange(0, 572)
         # dataset.loc[index, 'Glucose'] = dataset.loc[element, 'Glucose']
     if math.isnan(row["BloodPressure"]):
-        dataset.loc[index, 'BloodPressure'] = b[int(row["Outcome"])]
-        # element = randrange(0, 571)
+        dataset.loc[index, 'BloodPressure'] = randrange(int(dataapp['BloodPressure'].min()), int(dataapp['BloodPressure'].max()))
+        # dataset.loc[index, 'BloodPressure'] = b[int(row["Outcome"])]
+        # element = randrange(0, 572)
         # while math.isnan(dataset.loc[element, 'BloodPressure']):
-        #     element = randrange(0, 571)
+        #     element = randrange(0, 572)
         # dataset.loc[index, 'BloodPressure'] = dataset.loc[element, 'BloodPressure']
     if math.isnan(row["SkinThickness"]):
-        dataset.loc[index, 'SkinThickness'] = s[int(row["Outcome"])]
-        # element = randrange(0, 571)
+        dataset.loc[index, 'SkinThickness'] = randrange(int(dataapp['SkinThickness'].min()), int(dataapp['SkinThickness'].max()))
+        # dataset.loc[index, 'SkinThickness'] = s[int(row["Outcome"])]
+        # element = randrange(0, 572)
         # while math.isnan(dataset.loc[element, 'SkinThickness']):
-        #     element = randrange(0, 571)
+        #     element = randrange(0, 572)
         # dataset.loc[index, 'SkinThickness'] = dataset.loc[element, 'SkinThickness']
     if math.isnan(row["Insulin"]):
-        dataset.loc[index, 'Insulin'] = ins[int(row["Outcome"])]
-        # element = randrange(0, 571)
+        dataset.loc[index, 'Insulin'] = randrange(int(dataapp['Insulin'].min()), int(dataapp['Insulin'].max()))
+        # dataset.loc[index, 'Insulin'] = ins[int(row["Outcome"])]
+        # element = randrange(0, 572)
         # while math.isnan(dataset.loc[element, 'Insulin']):
-        #     element = randrange(0, 571)
+        #     element = randrange(0, 572)
         # dataset.loc[index, 'Insulin'] = dataset.loc[element, 'Insulin']
     if math.isnan(row["BMI"]):
-        dataset.loc[index, 'BMI'] = bm[int(row["Outcome"])]
-        # element = randrange(0, 571)
+        dataset.loc[index, 'BMI'] = randrange(int(dataapp['BMI'].min()), int(dataapp['BMI'].max()))
+        # dataset.loc[index, 'BMI'] = bm[int(row["Outcome"])]
+        # element = randrange(0, 572)
         # while math.isnan(dataset.loc[element, 'BMI']):
-        #     element = randrange(0, 571)
+        #     element = randrange(0, 572)
         # dataset.loc[index, 'BMI'] = dataset.loc[element, 'BMI']
 
 # for index, row in dataset.iterrows():
