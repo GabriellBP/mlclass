@@ -11,16 +11,19 @@ dataset = pd.read_csv('../diabetes_dataset.csv')
 # ordena o dataset de forma que as linhas com menos lacunas fiquem no topo
 ordered_data = dataset.iloc[dataset.isnull().sum(axis=1).argsort()]
 
-columns = ['Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI']
+# columns = ['Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI']
+columns = ['Pregnancies', 'DiabetesPedigreeFunction', 'Age', 'Outcome', 'Glucose', 'BMI', 'BloodPressure',
+           'SkinThickness']
+ignored_cols = ['Insulin']
 
 
 def find_best_neighbor(rank, id, key):
-    minimum = rank[0]
+    minimum = sys.maxsize
     unique = True
     for i, v in enumerate(rank):
         if v <= minimum and i != id and not math.isnan(ordered_data.loc[i, key]):
             unique = True if v < minimum else False
-            minimum = v
+            minimum = ordered_data.loc[i, key]
 
     return minimum, unique
 
@@ -54,7 +57,8 @@ for index, row in ordered_data.iterrows():
 
                     for idx, value in neighbors.iterrows():
                         # print(idx, value[k])
-                        ranking[idx] += row[k] if math.isnan(value[k]) else value[k]
+                        worst_neighbor = neighbors[k].max()
+                        ranking[idx] += 1.5 if math.isnan(value[k]) else (value[k] / worst_neighbor)
 
             value, is_unique = find_best_neighbor(ranking, index, c)
             ordered_data.loc[index, c] = value
@@ -62,18 +66,10 @@ for index, row in ordered_data.iterrows():
     if DEBUG:
         print('\n')
 
-
-    # if math.isnan(row['Glucose']):
-    #     dataset.loc[index, 'Glucose'] = randrange(int(dataapp['Glucose'].min()), int(dataapp['Glucose'].max()))
-    # if math.isnan(row['BloodPressure']):
-    #     dataset.loc[index, 'BloodPressure'] = randrange(int(dataapp['BloodPressure'].min()), int(dataapp['BloodPressure'].max()))
-    # if math.isnan(row['SkinThickness']):
-    #     dataset.loc[index, 'SkinThickness'] = randrange(int(dataapp['SkinThickness'].min()), int(dataapp['SkinThickness'].max()))
-    # if math.isnan(row['Insulin']):
-    #     dataset.loc[index, 'Insulin'] = randrange(int(dataapp['Insulin'].min()), int(dataapp['Insulin'].max()))
-    # if math.isnan(row['BMI']):
-    #     dataset.loc[index, 'BMI'] = randrange(int(dataapp['BMI'].min()), int(dataapp['BMI'].max()))
+for c in ignored_cols:
+    ordered_data.drop(c, 1, inplace=True)
 
 ordered_data.to_csv('vassalo_new_data.csv')
+ordered_data.to_csv('../new_data.csv')
 print("NaN count: ", ordered_data.isnull().sum())
 
