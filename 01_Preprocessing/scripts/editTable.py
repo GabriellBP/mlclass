@@ -110,5 +110,4 @@ for index, row in dataset.iterrows():
 
 # print(dataset.to_string())
 dataset.to_csv("new_data.csv")
-
-print(dataset.isnull().sum())
+print("NaN count: ", dataset.isnull().sum())
