@@ -19,9 +19,9 @@ data = pd.read_csv('new_data.csv')
 # Criando X and y par ao algorítmo de aprendizagem de máquina.\
 print(' - Criando X e y para o algoritmo de aprendizagem a partir do arquivo diabetes_dataset')
 # Caso queira modificar as colunas consideradas basta algera o array a seguir.
-feature_cols = ['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness',
+feature_cols = ['Pregnancies', 'Glucose', 'BloodPressure',
                 'BMI', 'DiabetesPedigreeFunction', 'Age']
-ignored_cols = ['Insulin']
+ignored_cols = ['Insulin', 'SkinThickness']
 X = data[feature_cols]
 y = data.Outcome
 
