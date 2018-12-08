@@ -8,10 +8,10 @@ import os
 
 global max_accuracy, missing_pairs, local_max_accuracy
 max_accuracy = 0.83673469387755
-local_max_accuracy = 0.75
+local_max_accuracy = 0.83673469387755
 n = 3
 attempts = 1
-best_dataset = pd.read_csv('csv/naive_diabetes_dataset.csv')
+best_dataset = pd.read_csv('csv/incremental_new_data_0.83673469387755.csv')
 missing_dataset = pd.read_csv('../diabetes_dataset.csv')
 missing_cols = ['Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI']
 
