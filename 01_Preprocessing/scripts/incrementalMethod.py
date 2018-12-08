@@ -1,15 +1,14 @@
 import json
-import threading
 import pandas as pd
 from sklearn.neighbors import KNeighborsClassifier
 import requests
 import math
 from random import randrange
-import numpy as np
+import os
 
 global max_accuracy, missing_pairs, local_max_accuracy
 max_accuracy = 0.83673469387755
-local_max_accuracy = 0
+local_max_accuracy = 0.75
 n = 3
 attempts = 1
 best_dataset = pd.read_csv('csv/naive_diabetes_dataset.csv')
@@ -66,12 +65,16 @@ def make_request():
                 print(str(best_row[missing_pairs[person_id]]) + '\n----------\n' + str(best_dataset.iloc[person_id][missing_pairs[person_id]]) + '\n')
                 response = send_request(best_dataset)
                 if response['accuracy'] > local_max_accuracy:
+                    if os.path.exists('csv/incremental_new_data_' + str(local_max_accuracy) + '.csv'):
+                        os.remove('csv/incremental_new_data_' + str(local_max_accuracy) + '.csv')
+
                     local_max_accuracy = response['accuracy']
+                    best_dataset.to_csv('csv/incremental_new_data_' + str(local_max_accuracy) + '.csv')
                     best_row = best_dataset.iloc[person_id].copy()
 
                     if local_max_accuracy > max_accuracy:
                         max_accuracy = response['accuracy']
-                        best_dataset.to_csv('csv/' + str(response['accuracy']) + '_new_data_brute.csv')
+                        best_dataset.to_csv('csv/' + str(response['accuracy']) + '_new_data_incremental.csv')
                 print(' - Resposta do servidor:\n', response, '\n')
 
         best_dataset.iloc[person_id] = best_row
