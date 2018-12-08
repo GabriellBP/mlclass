@@ -5,12 +5,14 @@ import requests
 import math
 from random import randrange
 import os
+import datetime
 
-global max_accuracy, missing_pairs, local_max_accuracy
+global max_accuracy, missing_pairs, local_max_accuracy, allow_invert_on_no_gaps_row
 max_accuracy = 0.83673469387755
 local_max_accuracy = 0.83673469387755
 n = 3
 attempts = 1
+allow_invert_on_no_gaps_row = False
 best_dataset = pd.read_csv('csv/incremental_new_data_0.83673469387755.csv')
 missing_dataset = pd.read_csv('../diabetes_dataset.csv')
 missing_cols = ['Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI']
@@ -38,44 +40,75 @@ def generate_turns(i, a, total):
         generate_turns(i - 1, a + [j], total)
 
 
+def has_gaps(row, cols):
+    for col in cols:
+        if row[col] == 0:
+            return True
+    return False
+
+
 def make_request():
-    global max_accuracy, missing_pairs, local_max_accuracy
+    global max_accuracy, missing_pairs, local_max_accuracy, allow_invert_on_no_gaps_row
 
     count = 0
+    modified_person = False
     for person_id in missing_pairs:
         count += 1
         turns = []
         generate_turns(len(missing_pairs[person_id]), [], turns)
-        print('#' * 15, 'NEXT PERSON [ID: {}, {}/{}]'.format(person_id, count, len(missing_pairs)), '#' * 15, missing_pairs[person_id])
+        row_has_gaps = has_gaps(best_dataset.iloc[person_id], missing_pairs[person_id])
+        original_row = best_dataset.iloc[person_id].copy()
+
+        print('#' * 15, 'NEXT PERSON [ID: {}, {}/{}], {}GAPS FOUND'.format(person_id, count, len(missing_pairs),
+                                                                           '' if row_has_gaps else 'NO '),
+              '#' * 15, missing_pairs[person_id])
         print('turns:', turns, '\n')
 
         best_row = best_dataset.iloc[person_id].copy()
         for i in range(attempts):
             for turn in turns:
                 print('selected turn:', turn)
+                modified = False
                 for index, col in enumerate(missing_pairs[person_id]):
-                    mean = best_dataset[col].mean()
-                    sd = best_dataset[col].std()
+                    mean = missing_dataset[col].mean()
+                    sd = missing_dataset[col].std()
 
-                    if turn[index] == 0:
-                        best_dataset.loc[person_id, col] = randrange(max(0, int(mean - n * sd)), int(mean))
-                    else:
-                        best_dataset.loc[person_id, col] = randrange(int(mean), int(mean + n * sd))
+                    if row_has_gaps:
+                        if original_row[col] == 0:
+                            modified = True
+                            if turn[index] == 0:
+                                best_dataset.loc[person_id, col] = randrange(max(0, int(mean - n * sd)), int(mean))
+                            else:
+                                best_dataset.loc[person_id, col] = randrange(int(mean), int(mean + n * sd))
+                    elif allow_invert_on_no_gaps_row:
+                        is_above = True if best_dataset.loc[person_id, col] > mean else False
+                        if turn[index] == 0:
+                            modified = True
+                            best_dataset.loc[person_id, col] = randrange(max(0, int(mean - n * sd)), int(mean)) \
+                                if is_above else randrange(int(mean), int(mean + n * sd))
+                        # else:
+                        #     best_dataset.loc[person_id, col] = randrange(int(mean), int(mean + n * sd)) if is_above \
+                        #                                         else randrange(max(0, int(mean - n * sd)), int(mean))
 
-                print(str(best_row[missing_pairs[person_id]]) + '\n----------\n' + str(best_dataset.iloc[person_id][missing_pairs[person_id]]) + '\n')
-                response = send_request(best_dataset)
-                if response['accuracy'] > local_max_accuracy:
-                    if os.path.exists('csv/incremental_new_data_' + str(local_max_accuracy) + '.csv'):
-                        os.remove('csv/incremental_new_data_' + str(local_max_accuracy) + '.csv')
+                if modified:
+                    modified_person = True
+                    print('CURRENT BEST ROW:\n' + str(best_row[missing_pairs[person_id]]) + '\n--------\nCURRENT ROW:\n'
+                          + str(best_dataset.iloc[person_id][missing_pairs[person_id]]) + '\n')
+                    response = send_request(best_dataset)
+                    if response['accuracy'] > local_max_accuracy:
+                        if os.path.exists('csv/incremental_new_data_' + str(local_max_accuracy) + '.csv'):
+                            os.remove('csv/incremental_new_data_' + str(local_max_accuracy) + '.csv')
 
-                    local_max_accuracy = response['accuracy']
-                    best_dataset.to_csv('csv/incremental_new_data_' + str(local_max_accuracy) + '.csv')
-                    best_row = best_dataset.iloc[person_id].copy()
+                        local_max_accuracy = response['accuracy']
+                        best_dataset.to_csv('csv/incremental_new_data_' + str(local_max_accuracy) + '.csv')
+                        best_row = best_dataset.iloc[person_id].copy()
 
-                    if local_max_accuracy > max_accuracy:
-                        max_accuracy = response['accuracy']
-                        best_dataset.to_csv('csv/' + str(response['accuracy']) + '_new_data_incremental.csv')
-                print(' - Resposta do servidor:\n', response, '\n')
+                        if local_max_accuracy > max_accuracy:
+                            max_accuracy = response['accuracy']
+                            best_dataset.to_csv('csv/' + str(response['accuracy']) + '_new_data_incremental.csv')
+                    print(' - Resposta do servidor:\n', response, '\n')
+                else:
+                    print(' - Nada a enviar\n')
 
         best_dataset.iloc[person_id] = best_row
         print('-' * 20, 'BEST ROW', '-' * 20)
@@ -83,8 +116,7 @@ def make_request():
         print(best_row[missing_pairs[person_id]])
         print('-' * 50, '\n\n')
 
-
-    make_request()
+    allow_invert_on_no_gaps_row = not modified_person
 
 
 def send_request(dataset):
@@ -119,6 +151,7 @@ def send_request(dataset):
     data = {'dev_key': DEV_KEY,
             'predictions': pd.Series(y_pred).to_json(orient='values')}
 
+    got_error = False
     while True:
         # Enviando requisição e salvando o objeto resposta
         r = requests.post(url=URL, data=data)
@@ -130,11 +163,14 @@ def send_request(dataset):
             if res['accuracy'] is not None:
                 break
         except:
-            print(' - Resposta do servidor:\n', r.text, '\n')
+            if not got_error:
+                got_error = True
+                print(' - Resposta do servidor ({}):\n'.format(datetime.datetime.now().time()), r.text, '\n')
             continue
 
     return res
 
 
 missing_pairs = find_all_missing_pairs(missing_dataset)
-make_request()
+while True:
+    make_request()
