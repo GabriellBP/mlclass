@@ -62,6 +62,7 @@ def make_request():
         print('#' * 15, 'NEXT PERSON [ID: {}, {}/{}], {}GAPS FOUND'.format(person_id, count, len(missing_pairs),
                                                                            '' if row_has_gaps else 'NO '),
               '#' * 15, missing_pairs[person_id])
+        print('invert values on gaps filled:', allow_invert_on_no_gaps_row)
         print('turns:', turns, '\n')
 
         best_row = best_dataset.iloc[person_id].copy()
