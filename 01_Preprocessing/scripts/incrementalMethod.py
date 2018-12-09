@@ -11,7 +11,7 @@ global max_accuracy, missing_pairs, local_max_accuracy, allow_invert_on_no_gaps_
 max_accuracy = 0.8469387755102
 local_max_accuracy = 0.8469387755102
 allow_invert_on_no_gaps_row = False
-start_at = 50
+start_at = 53
 
 n = 3
 attempts = 1
@@ -124,7 +124,7 @@ def make_request():
                 else:
                     print(' - Nada a enviar\n')
 
-                if not had_impact and attempted >= (len(turns) / 2 + 1):
+                if not had_impact and attempted >= len(turns) / 2:
                     print('>' * 30, 'SKIPPING MEANINGLESS PERSON!!!\n')
                     break
 
