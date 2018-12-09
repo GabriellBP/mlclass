@@ -19,9 +19,8 @@ data = pd.read_csv('new_data.csv')
 # Criando X and y par ao algorítmo de aprendizagem de máquina.\
 print(' - Criando X e y para o algoritmo de aprendizagem a partir do arquivo diabetes_dataset')
 # Caso queira modificar as colunas consideradas basta algera o array a seguir.
-feature_cols = ['Pregnancies', 'Glucose', 'BloodPressure',
-                'BMI', 'DiabetesPedigreeFunction', 'Age']
-ignored_cols = ['Insulin', 'SkinThickness']
+feature_cols = ['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness',
+                'Insulin', 'BMI', 'DiabetesPedigreeFunction', 'Age']
 X = data[feature_cols]
 y = data.Outcome
 
@@ -33,8 +32,6 @@ neigh.fit(X, y)
 # realizando previsões com o arquivo de
 print(' - Aplicando modelo e enviando para o servidor')
 data_app = pd.read_csv('diabetes_app.csv')
-for c in ignored_cols:
-    data_app.drop(c, 1, inplace=True)
 y_pred = neigh.predict(data_app)
 
 # Enviando previsões realizadas com o modelo para o servidor

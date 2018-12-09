@@ -8,14 +8,14 @@ import os
 import datetime
 
 global max_accuracy, missing_pairs, local_max_accuracy, allow_invert_on_no_gaps_row, start_at
-max_accuracy = 0.8469387755102
-local_max_accuracy = 0.8469387755102
+max_accuracy = 0.85204081632653
+local_max_accuracy = 0.85204081632653
 allow_invert_on_no_gaps_row = False
-start_at = 53
+start_at = 131
 
 n = 3
 attempts = 1
-best_dataset = pd.read_csv('csv/incremental_new_data_0.8469387755102.csv')
+best_dataset = pd.read_csv('csv/incremental_new_data_0.85204081632653.csv')
 missing_dataset = pd.read_csv('../diabetes_dataset.csv')
 missing_cols = ['Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI']
 
