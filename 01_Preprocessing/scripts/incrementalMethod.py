@@ -8,11 +8,11 @@ import os
 import datetime
 
 global max_accuracy, method_max_accuracy, can_skip_person, start_at, start_at_turn, start_with_impact
-max_accuracy = 0.86224489795918
-method_max_accuracy = 0.86224489795918
+max_accuracy = 0.86734693877551
+method_max_accuracy = 0.86734693877551
 can_skip_person = True
-start_at = 341
-start_at_turn = 1
+start_at = 347
+start_at_turn = 0
 start_with_impact = False
 
 n = 3
