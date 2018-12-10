@@ -11,7 +11,7 @@ global max_accuracy, method_max_accuracy, can_skip_person, start_at, start_at_tu
 max_accuracy = 0.86734693877551
 method_max_accuracy = 0.86734693877551
 can_skip_person = True
-start_at = 347
+start_at = 0
 start_at_turn = 0
 start_with_impact = False
 
