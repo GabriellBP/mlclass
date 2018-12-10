@@ -7,16 +7,16 @@ from random import randrange
 import os
 import datetime
 
-global max_accuracy, missing_pairs, local_max_accuracy, allow_invert_on_no_gaps_row, start_at
+global max_accuracy, method_max_accuracy, can_skip_person, start_at
 max_accuracy = 0.85204081632653
-local_max_accuracy = 0.85204081632653
-allow_invert_on_no_gaps_row = False
-start_at = 131
+method_max_accuracy = 0.85204081632653
+can_skip_person = True
+start_at = 156
 
 n = 3
-attempts = 1
+data_app = pd.read_csv('../diabetes_app.csv')
 best_dataset = pd.read_csv('csv/incremental_new_data_0.85204081632653.csv')
-missing_dataset = pd.read_csv('../diabetes_dataset.csv')
+missing_dataset = pd.read_csv('csv/incremental_missing_diabetes_dataset.csv')
 missing_cols = ['Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI']
 
 
@@ -50,10 +50,11 @@ def has_gaps(row, cols):
 
 
 def make_request():
-    global max_accuracy, missing_pairs, local_max_accuracy, allow_invert_on_no_gaps_row, start_at
+    global max_accuracy, method_max_accuracy, can_skip_person, start_at
 
+    missing_pairs = find_all_missing_pairs(missing_dataset)
     count = 0
-    modified_person = False
+    had_any_impact = False
     for person_id in missing_pairs:
         count += 1
         if count < start_at:
@@ -63,78 +64,75 @@ def make_request():
         turns = []
         generate_turns(len(missing_pairs[person_id]), [], turns)
         row_has_gaps = has_gaps(best_dataset.iloc[person_id], missing_pairs[person_id])
-        original_row = best_dataset.iloc[person_id].copy()
 
         print('#' * 15, 'NEXT PERSON [ID: {}, {}/{}], {}GAPS FOUND'.format(person_id, count, len(missing_pairs),
                                                                            '' if row_has_gaps else 'NO '),
               '#' * 15, missing_pairs[person_id])
-        print('invert values on gaps filled:', allow_invert_on_no_gaps_row)
+        print('can skip "meaningless" person:', can_skip_person)
         print('turns:', turns, '\n')
 
         best_row = best_dataset.iloc[person_id].copy()
-        for i in range(attempts):
+
+        if row_has_gaps:
             had_impact = False
+            negative_impacts = 0
             attempted = 0
+
             for turn in turns:
                 print('selected turn:', turn)
-                modified = False
                 for index, col in enumerate(missing_pairs[person_id]):
                     mean = missing_dataset[col].mean()
                     sd = missing_dataset[col].std()
 
-                    if row_has_gaps:
-                        if original_row[col] == 0:
-                            modified = True
-                            if turn[index] == 0:
-                                best_dataset.loc[person_id, col] = randrange(max(0, int(mean - n * sd)), int(mean))
-                            else:
-                                best_dataset.loc[person_id, col] = randrange(int(mean), int(mean + n * sd))
-                    elif allow_invert_on_no_gaps_row:
-                        is_above = True if best_dataset.loc[person_id, col] > mean else False
-                        if turn[index] == 0:
-                            modified = True
-                            best_dataset.loc[person_id, col] = randrange(max(0, int(mean - n * sd)), int(mean)) \
-                                if is_above else randrange(int(mean), int(mean + n * sd))
-                        # else:
-                        #     best_dataset.loc[person_id, col] = randrange(int(mean), int(mean + n * sd)) if is_above \
-                        #                                         else randrange(max(0, int(mean - n * sd)), int(mean))
+                    if turn[index] == 0:
+                        best_dataset.loc[person_id, col] = randrange(int(mean - n * sd), int(mean))
+                        if best_dataset.loc[person_id, col] < 0:
+                            best_dataset.loc[person_id, col] = 0
+                    else:
+                        best_dataset.loc[person_id, col] = randrange(int(mean), int(mean + n * sd))
 
-                if modified:
-                    modified_person = True
-                    attempted += 1
+                print('CURRENT BEST ROW:\n' + str(best_row[missing_pairs[person_id]]) + '\n--------\nCURRENT ROW:\n'
+                      + str(best_dataset.iloc[person_id][missing_pairs[person_id]]) + '\n')
 
-                    print('CURRENT BEST ROW:\n' + str(best_row[missing_pairs[person_id]]) + '\n--------\nCURRENT ROW:\n'
-                          + str(best_dataset.iloc[person_id][missing_pairs[person_id]]) + '\n')
+                attempted += 1
+                response = send_request(best_dataset)
+                if response['accuracy'] != method_max_accuracy:
+                    had_impact = True
+                    had_any_impact = True
 
-                    response = send_request(best_dataset)
-                    if response['accuracy'] != local_max_accuracy:
-                        had_impact = True
-                    if response['accuracy'] > local_max_accuracy:
-                        if os.path.exists('csv/incremental_new_data_' + str(local_max_accuracy) + '.csv'):
-                            os.remove('csv/incremental_new_data_' + str(local_max_accuracy) + '.csv')
+                    if response['accuracy'] < method_max_accuracy:
+                        negative_impacts += 1
+                    elif response['accuracy'] > method_max_accuracy:
+                        if os.path.exists('csv/incremental_new_data_' + str(method_max_accuracy) + '.csv'):
+                            os.remove('csv/incremental_new_data_' + str(method_max_accuracy) + '.csv')
 
-                        local_max_accuracy = response['accuracy']
-                        best_dataset.to_csv('csv/incremental_new_data_' + str(local_max_accuracy) + '.csv')
+                        method_max_accuracy = response['accuracy']
+                        best_dataset.to_csv('csv/incremental_new_data_' + str(method_max_accuracy) + '.csv')
                         best_row = best_dataset.iloc[person_id].copy()
 
-                        if local_max_accuracy > max_accuracy:
-                            max_accuracy = response['accuracy']
-                            best_dataset.to_csv('csv/' + str(response['accuracy']) + '_new_data_incremental.csv')
-                    print(' - Resposta do servidor:\n', response, '\n')
-                else:
-                    print(' - Nada a enviar\n')
+                        if method_max_accuracy > max_accuracy:
+                            max_accuracy = method_max_accuracy
+                            best_dataset.to_csv('csv/' + str(max_accuracy) + '_new_data_incremental.csv')
+                print(' - Resposta do servidor:\n', response, '\n')
 
-                if not had_impact and attempted >= len(turns) / 2:
+                if not had_impact and attempted == len(turns) / 2 and can_skip_person:
                     print('>' * 30, 'SKIPPING MEANINGLESS PERSON!!!\n')
                     break
 
+            if negative_impacts == len(turns):
+                print('>' * 30, 'UPDATING MISSING DATA SET!!! THIS PERSON\'S GAPS MAY BE ZEROS')
+                missing_dataset.iloc[person_id] = best_row
+                missing_dataset.to_csv('csv/incremental_missing_diabetes_dataset.csv')
+        else:   # da forma atual, provavelmente nunca vai entrar aqui
+            print(' - Nada a enviar\n')
+
         best_dataset.iloc[person_id] = best_row
         print('-' * 20, 'BEST ROW', '-' * 20)
-        print('- BEST LOCAL ACCURACY:', local_max_accuracy)
+        print('- BEST LOCAL ACCURACY:', method_max_accuracy)
         print(best_row[missing_pairs[person_id]])
         print('-' * 50, '\n\n')
 
-    allow_invert_on_no_gaps_row = not modified_person
+    can_skip_person = had_any_impact
 
 
 def send_request(dataset):
@@ -156,7 +154,6 @@ def send_request(dataset):
 
     # realizando previsões com o arquivo de
     # print(' - Aplicando modelo e enviando para o servidor')
-    data_app = pd.read_csv('../diabetes_app.csv')
     y_pred = neigh.predict(data_app)
 
     # Enviando previsões realizadas com o modelo para o servidor
@@ -189,6 +186,5 @@ def send_request(dataset):
     return res
 
 
-missing_pairs = find_all_missing_pairs(missing_dataset)
 while True:
     make_request()
