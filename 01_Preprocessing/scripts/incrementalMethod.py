@@ -8,10 +8,10 @@ import os
 import datetime
 
 global max_accuracy, method_max_accuracy, can_skip_person, start_at
-max_accuracy = 0.85204081632653
-method_max_accuracy = 0.85204081632653
+max_accuracy = 0.86224489795918
+method_max_accuracy = 0.86224489795918
 can_skip_person = True
-start_at = 156
+start_at = 345
 
 n = 3
 data_app = pd.read_csv('../diabetes_app.csv')
