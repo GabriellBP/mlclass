@@ -84,12 +84,17 @@ def make_request():
                     mean = missing_dataset[col].mean()
                     sd = missing_dataset[col].std()
 
+                    below = randrange(int(mean - n * sd), int(mean))
+                    if below < 0:
+                        below = 0
+                    above = randrange(int(mean), int(mean + n * sd))
                     if turn[index] == 0:
-                        best_dataset.loc[person_id, col] = randrange(int(mean - n * sd), int(mean))
-                        if best_dataset.loc[person_id, col] < 0:
-                            best_dataset.loc[person_id, col] = 0
+                        if len(turns) == 2 and below == 0:
+                            best_dataset.loc[person_id, col] = above
+                        else:
+                            best_dataset.loc[person_id, col] = below
                     else:
-                        best_dataset.loc[person_id, col] = randrange(int(mean), int(mean + n * sd))
+                        best_dataset.loc[person_id, col] = above
 
                 print('CURRENT BEST ROW:\n' + str(best_row[missing_pairs[person_id]]) + '\n--------\nCURRENT ROW:\n'
                       + str(best_dataset.iloc[person_id][missing_pairs[person_id]]) + '\n')
