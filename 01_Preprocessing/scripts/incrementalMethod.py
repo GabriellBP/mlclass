@@ -7,15 +7,17 @@ from random import randrange
 import os
 import datetime
 
-global max_accuracy, method_max_accuracy, can_skip_person, start_at
+global max_accuracy, method_max_accuracy, can_skip_person, start_at, start_at_turn, start_with_impact
 max_accuracy = 0.86224489795918
 method_max_accuracy = 0.86224489795918
 can_skip_person = True
-start_at = 345
+start_at = 341
+start_at_turn = 1
+start_with_impact = False
 
 n = 3
 data_app = pd.read_csv('../diabetes_app.csv')
-best_dataset = pd.read_csv('csv/incremental_new_data_0.85204081632653.csv')
+best_dataset = pd.read_csv('csv/incremental_new_data_{}.csv'.format(method_max_accuracy))
 missing_dataset = pd.read_csv('csv/incremental_missing_diabetes_dataset.csv')
 missing_cols = ['Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI']
 
@@ -50,11 +52,11 @@ def has_gaps(row, cols):
 
 
 def make_request():
-    global max_accuracy, method_max_accuracy, can_skip_person, start_at
+    global max_accuracy, method_max_accuracy, can_skip_person, start_at, start_at_turn, start_with_impact
 
     missing_pairs = find_all_missing_pairs(missing_dataset)
     count = 0
-    had_any_impact = False
+    had_any_impact = start_with_impact
     for person_id in missing_pairs:
         count += 1
         if count < start_at:
@@ -74,11 +76,18 @@ def make_request():
         best_row = best_dataset.iloc[person_id].copy()
 
         if row_has_gaps:
-            had_impact = False
+            had_impact = start_with_impact
             negative_impacts = 0
             attempted = 0
 
-            for turn in turns:
+            for t, turn in enumerate(turns):
+                attempted += 1
+
+                if t < start_at_turn:
+                    continue
+
+                start_at_turn = 0
+                start_with_impact = False
                 print('selected turn:', turn)
                 for index, col in enumerate(missing_pairs[person_id]):
                     mean = missing_dataset[col].mean()
@@ -99,7 +108,6 @@ def make_request():
                 print('CURRENT BEST ROW:\n' + str(best_row[missing_pairs[person_id]]) + '\n--------\nCURRENT ROW:\n'
                       + str(best_dataset.iloc[person_id][missing_pairs[person_id]]) + '\n')
 
-                attempted += 1
                 response = send_request(best_dataset)
                 if response['accuracy'] != method_max_accuracy:
                     had_impact = True
