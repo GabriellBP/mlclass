@@ -51,7 +51,7 @@ def has_gaps(row, cols):
     return False
 
 
-def make_request():
+def incremental_method():
     global max_accuracy, method_max_accuracy, can_skip_person, start_at, start_at_turn, start_with_impact
 
     missing_pairs = find_all_missing_pairs(missing_dataset)
@@ -145,7 +145,11 @@ def make_request():
         print(best_row[missing_pairs[person_id]])
         print('-' * 50, '\n\n')
 
+    if not can_skip_person and not had_any_impact:
+        return False
+
     can_skip_person = had_any_impact
+    return True
 
 
 def send_request(dataset):
@@ -199,5 +203,5 @@ def send_request(dataset):
     return res
 
 
-while True:
-    make_request()
+while incremental_method():
+    continue
