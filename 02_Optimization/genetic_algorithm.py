@@ -62,9 +62,6 @@ while True:
             print('At:', datetime.datetime.now().time())
             print()
 
-    # print('\n')
-    # print('#'*50)
-    # print('\n')
     intervals = local_intervals
 
     if not improved:
