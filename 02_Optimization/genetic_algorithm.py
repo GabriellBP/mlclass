@@ -27,8 +27,10 @@ def generate_turns(i, a, total):
 
 
 generate_turns(6, [], turns)
+no_improvement_count = 0
 while True:
     local_intervals = copy.deepcopy(intervals)
+    improved = False
 
     for t in turns:
         values = {}
@@ -48,6 +50,8 @@ while True:
         result = float(r.text.split('\n')[0])
 
         if result > best_result:
+            improved = True
+            no_improvement_count = 0
             best_result = result
             local_intervals = copy.deepcopy(curr_intervals)
 
@@ -58,7 +62,18 @@ while True:
             print('At:', datetime.datetime.now().time())
             print()
 
-    # print('\n')
-    # print('#'*50)
-    # print('\n')
     intervals = local_intervals
+
+    if not improved:
+        no_improvement_count += 1
+
+        if no_improvement_count == 100:
+            print('\n\n\nRESETTING....\n\n\n')
+            intervals = {
+                'phi1': (0, 360),
+                'theta1': (0, 360),
+                'phi2': (0, 360),
+                'theta2': (0, 360),
+                'phi3': (0, 360),
+                'theta3': (0, 360)
+            }
