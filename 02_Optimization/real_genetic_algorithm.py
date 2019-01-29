@@ -30,8 +30,8 @@ def evaluate(chromosome):
 
     while True:
         try:
-            r = requests.get(url.format(chromosome.angles[0], chromosome.angles[1], chromosome.angles[2], chromosome.angles[3],
-                                        chromosome.angles[4], chromosome.angles[5]))
+            r = requests.get(url.format(chromosome.angles[0], chromosome.angles[1], chromosome.angles[2],
+                                        chromosome.angles[3], chromosome.angles[4], chromosome.angles[5]))
             break
         except:
             print('DEU RUIM!')
@@ -58,7 +58,7 @@ def crossover(population):
         reg_individual = population[random.randint(int(len(population) * 0.20), int(len(population) * 0.6))]
 
         for i in range(8):
-            cp = random.randint(0, 6)
+            cp = random.randint(0, 5)
             child = top_individual.angles[:cp] + reg_individual.angles[cp:]
             assert len(child) == 6
             descendants.append(Chromosome(child))
@@ -68,8 +68,18 @@ def crossover(population):
 def mutate(population):
     mutants = copy.deepcopy(population)
     for i in range(len(mutants)):
-        mp = random.randint(0, 6)
+        mp = random.randint(0, 5)
+        assert len(mutants[i].angles) == 6
+        # print('mutate i', i, len(mutants), mp, len(mutants[i].angles))
+        # print('value', mutants[i].angles[mp])
         mutants[i].angles[mp] += random.randint(0, 15) if random.randint(0, 2) == 1 else -random.randint(0, 15)
+
+        if mutants[i].angles[mp] < 0:
+            mutants[i].angles[mp] = 0
+        elif mutants[i].angles[mp] >= 360:
+            mutants[i].angles[mp] = 359
+
+        mutants[i].score = evaluate(mutants[i])
     return mutants
 
 

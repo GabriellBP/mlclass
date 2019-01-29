@@ -5,8 +5,8 @@ import requests
 url = 'http://localhost:8080/antenna/simulate?phi1={}&theta1={}&phi2={}&theta2={}&phi3={}&theta3={}'
 angles = ['phi1', 'theta1', 'phi2', 'theta2', 'phi3', 'theta3']
 
-values = {'phi1': 10, 'theta1': 180, 'phi2': 121, 'theta2': 0, 'phi3': 180, 'theta3': 155}
-best_result = 28.363570477928704
+values = {'phi1': 10, 'theta1': 180, 'phi2': 359, 'theta2': 60, 'phi3': 180, 'theta3': 155}
+best_result = 29.096026726224075
 
 while True:
     improved = False
