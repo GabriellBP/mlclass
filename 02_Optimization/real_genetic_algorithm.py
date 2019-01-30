@@ -2,6 +2,7 @@ import copy
 import datetime
 import random
 import requests
+import time
 
 url = 'http://localhost:8080/antenna/simulate?phi1={}&theta1={}&phi2={}&theta2={}&phi3={}&theta3={}'
 
@@ -34,12 +35,12 @@ def evaluate(chromosome):
                                         chromosome.angles[3], chromosome.angles[4], chromosome.angles[5]))
             break
         except:
-            print('DEU RUIM!')
+            print('DEU RUIM! At{}'.format(datetime.datetime.now().time()))
+            time.sleep(0.5)
             continue
     result = float(r.text.split('\n')[0])
 
-    if chromosome.score is None:
-        chromosome.score = result
+    chromosome.score = result
 
     if result > best_result:
         best_result = result
