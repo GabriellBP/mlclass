@@ -3,7 +3,6 @@ import pandas as pd
 
 
 def send_2_server(y_pred):
-    print("olá olá olá")
     # Enviando previsões realizadas com o modelo para o servidor
     URL = "https://aydanomachado.com/mlclass/03_Validation.php"
 

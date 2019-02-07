@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from sklearn import preprocessing
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import cross_val_score, train_test_split
@@ -32,10 +33,13 @@ def generate_cross_val_score(clf, data, target, cv):
 
 
 def get_classifier(option=1):
-    if option == 1:
+    if option == 1:  # score: 0.6046973683089146
         # KNN classifier with n=3
         return KNeighborsClassifier(n_neighbors=3)
-    elif option == 2:
+    elif option == 2:  # score: 0.6497192013368424
+        # KNN classifier with n=19
+        return KNeighborsClassifier(n_neighbors=19)
+    elif option == 3:  # score: 0.5587182164432322
         # Tree classifier
         return DecisionTreeClassifier()
 
@@ -76,11 +80,12 @@ def main():
 
     # Ciando o modelo preditivo para a base trabalhada
     print(' - Criando modelo preditivo')
-    classifier = get_classifier()
+    classifier = get_classifier(2)
     classifier.fit(X, y)
 
     # Cross Validation score
-    print(generate_cross_val_score(classifier, X, y, 10))
+    score = np.mean(generate_cross_val_score(classifier, X, y, 10))
+    print('local score: {}'.format(score))
 
     # Realizando previsões com o arquivo de
     print(' - Aplicando modelo')
@@ -89,7 +94,7 @@ def main():
     y_pred = classifier.predict(data_app)
 
     # sending to the server
-    # send_2_server(y_pred)
+    send_2_server(y_pred)
 
 
 if __name__ == "__main__":
