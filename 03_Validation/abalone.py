@@ -33,13 +33,13 @@ def generate_cross_val_score(clf, data, target, cv):
 
 
 def get_classifier(option=1):
-    if option == 1:  # score: 0.6046973683089146
+    if option == 1:  # local score: 0.6046973683089146
         # KNN classifier with n=3
         return KNeighborsClassifier(n_neighbors=3)
-    elif option == 2:  # score: 0.6497192013368424
+    elif option == 2:  # local score: 0.6497192013368424
         # KNN classifier with n=19
         return KNeighborsClassifier(n_neighbors=19)
-    elif option == 3:  # score: 0.5587182164432322
+    elif option == 3:  # local score: 0.5587182164432322
         # Tree classifier
         return DecisionTreeClassifier()
 
@@ -87,7 +87,7 @@ def main():
     score = np.mean(generate_cross_val_score(classifier, X, y, 10))
     print('local score: {}'.format(score))
 
-    # Realizando previsões com o arquivo de
+    # Realizando previsões com o arquivo abalone_app.csv
     print(' - Aplicando modelo')
     data_app = pd.read_csv('abalone_app.csv')
     transform_sex_column(data_app)

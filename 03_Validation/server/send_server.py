@@ -19,3 +19,5 @@ def send_2_server(y_pred):
     # Extraindo e imprimindo o texto da resposta
     pastebin_url = r.text
     print(" - Resposta do servidor:\n", r.text, "\n")
+
+# KNN classifier with n=19 (option 2), server score: 0.6220095693779905
