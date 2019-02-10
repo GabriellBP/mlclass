@@ -52,6 +52,9 @@ def get_classifier(option=1):
         return MLPClassifier(verbose=0, random_state=0,
                              max_iter=400, solver='sgd', learning_rate='constant', momentum=.9,
                              nesterovs_momentum=True, learning_rate_init=0.2)
+    elif option == 6:  # local score: 0.6577339202766036
+        # MLP classifier with default params
+        return MLPClassifier(max_iter=400)
 
 
 # def preprocessing(df, columns=None):
@@ -90,7 +93,7 @@ def main():
 
     # Ciando o modelo preditivo para a base trabalhada
     print(' - Criando modelo preditivo')
-    classifier = get_classifier(4)
+    classifier = get_classifier(6)
     classifier.fit(X, y)
 
     # Cross Validation score
@@ -104,7 +107,7 @@ def main():
     y_pred = classifier.predict(data_app)
 
     # sending to the server
-    send_2_server(y_pred)
+    # send_2_server(y_pred)
 
 
 if __name__ == "__main__":
