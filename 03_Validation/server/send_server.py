@@ -21,3 +21,4 @@ def send_2_server(y_pred):
     print(" - Resposta do servidor:\n", r.text, "\n")
 
 # KNN classifier with n=19 (option 2), server score: 0.6220095693779905
+# MLP classifier with 'constant with Nesterov's momentum' (option 4), server score: 0.6478468899521531

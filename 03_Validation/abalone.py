@@ -4,6 +4,7 @@ from sklearn import preprocessing
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import cross_val_score, train_test_split
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neural_network import MLPClassifier
 from sklearn.tree import DecisionTreeClassifier
 
 from server.send_server import send_2_server
@@ -42,6 +43,15 @@ def get_classifier(option=1):
     elif option == 3:  # local score: 0.5587182164432322
         # Tree classifier
         return DecisionTreeClassifier()
+    elif option == 4:  # local score: 0.66091053909337
+        # MLP classifier with adam params
+        return MLPClassifier(verbose=0, random_state=0,
+                             max_iter=400, solver='adam', learning_rate_init=0.01)
+    elif option == 5:  # local score: 0.6251458914579832
+        # MLP classifier with constant with Nesterov's momentum params
+        return MLPClassifier(verbose=0, random_state=0,
+                             max_iter=400, solver='sgd', learning_rate='constant', momentum=.9,
+                             nesterovs_momentum=True, learning_rate_init=0.2)
 
 
 # def preprocessing(df, columns=None):
@@ -80,7 +90,7 @@ def main():
 
     # Ciando o modelo preditivo para a base trabalhada
     print(' - Criando modelo preditivo')
-    classifier = get_classifier(2)
+    classifier = get_classifier(4)
     classifier.fit(X, y)
 
     # Cross Validation score
