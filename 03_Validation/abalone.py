@@ -56,7 +56,7 @@ def get_classifier(option=1):
     elif option == 6:  # local score: variable
         # MLP classifier with default params
         return MLPClassifier(max_iter=400)
-    elif option == 7:  # local score: 0.6663418228461675
+    elif option == 7:  # local score: 0.6672972302744794 (X-validation=10); 0.6631670790979023 (X-validation=20)
         # MLP classifier with custom params
         return MLPClassifier(activation='relu', alpha=1e-05, batch_size='auto',
                              beta_1=0.9, beta_2=0.999, early_stopping=False,
@@ -66,20 +66,19 @@ def get_classifier(option=1):
                              nesterovs_momentum=True, power_t=0.5, random_state=1,
                              shuffle=True, solver='lbfgs', tol=0.0001,
                              validation_fraction=0.1, verbose=False, warm_start=False)
-    elif option == 8:  # local score: 0.6510072794815169
-        return RandomForestClassifier(n_estimators=500, max_depth=5, random_state=0)
-
-
-# def preprocessing(df, columns=None):
-#     # making manual preprocessing
-#     if columns is None:
-#         columns = df.columns
-#
-#     min_max_scaler = preprocessing.MinMaxScaler()
-#     np_scaled = min_max_scaler.fit_transform(df)
-#     df_normalized = pd.DataFrame(np_scaled, columns=df_names)
-#     np_scaled = min_max_scaler.fit_transform(df_test)
-#     df_test_normalized = pd.DataFrame(np_scaled, columns=df_test_names)
+    elif option == 8:  # local scores:
+        return RandomForestClassifier(n_estimators=700, oob_score=True, random_state=73, min_samples_leaf=10, max_features=6)
+    elif option == 9:  # local scores: 0.6561099300761193 (X-validation=10); 0.6564381674582185 (X-validation=20)
+        return RandomForestClassifier(n_estimators=700, oob_score=True, random_state=101, min_samples_leaf=15)
+    elif option == 10:  # local score: 0.6538877792887174 (X-validation=10)
+        return RandomForestClassifier(n_estimators=700, oob_score=True, n_jobs=1, random_state=101, min_samples_leaf=30)
+    elif option == 11:
+        # 0.6555023923444976 (servidor)
+        # 0.7681992337164751 (proprio)
+        # 0.654523717466067 (X-validation=10)
+        # 0.6580851337830741 (X-validation=15)
+        # 0.6573976649369829 (X-validation=20)
+        return RandomForestClassifier(n_estimators=700, oob_score=True, random_state=101, min_samples_leaf=10)
 
 
 def transform_sex_column(df):
@@ -106,12 +105,13 @@ def main():
 
     # Ciando o modelo preditivo para a base trabalhada
     print(' - Criando modelo preditivo')
-    classifier = get_classifier(7)
+    classifier = get_classifier(11)
     classifier.fit(X, y)
+    print('score: {}'.format(classifier.score(X, y)))
 
     # Cross Validation score
-    score = np.mean(generate_cross_val_score(classifier, X, y, 20))
-    print('local score: {}'.format(score))
+    score = np.mean(generate_cross_val_score(classifier, X, y, 15))
+    print('local X-val score: {}'.format(score))
 
     # Realizando previsões com o arquivo abalone_app.csv
     print(' - Aplicando modelo')
@@ -120,7 +120,7 @@ def main():
     y_pred = classifier.predict(data_app)
 
     # sending to the server
-    # send_2_server(y_pred)
+    send_2_server(y_pred)
 
 
 if __name__ == "__main__":
