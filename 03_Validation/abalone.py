@@ -8,7 +8,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.tree import DecisionTreeClassifier
 
-from server.send_server import send_2_server
+from scripts.server.send_server import send_2_server
 
 
 def split_data(X, y, test_size, random_state):
@@ -57,7 +57,7 @@ def get_classifier(option=1):
         # MLP classifier with default params
         return MLPClassifier(max_iter=400)
     elif option == 7:  # local score: 0.6663418228461675
-        # MLP classifier with default params
+        # MLP classifier with custom params
         return MLPClassifier(activation='relu', alpha=1e-05, batch_size='auto',
                              beta_1=0.9, beta_2=0.999, early_stopping=False,
                              epsilon=1e-08, hidden_layer_sizes=(15,),
@@ -66,8 +66,8 @@ def get_classifier(option=1):
                              nesterovs_momentum=True, power_t=0.5, random_state=1,
                              shuffle=True, solver='lbfgs', tol=0.0001,
                              validation_fraction=0.1, verbose=False, warm_start=False)
-    elif option == 8:  # local score: 0.6446490001025927
-        return RandomForestClassifier(n_estimators=1000)
+    elif option == 8:  # local score: 0.6510072794815169
+        return RandomForestClassifier(n_estimators=500, max_depth=5, random_state=0)
 
 
 # def preprocessing(df, columns=None):
@@ -106,11 +106,11 @@ def main():
 
     # Ciando o modelo preditivo para a base trabalhada
     print(' - Criando modelo preditivo')
-    classifier = get_classifier(8)
+    classifier = get_classifier(7)
     classifier.fit(X, y)
 
     # Cross Validation score
-    score = np.mean(generate_cross_val_score(classifier, X, y, 10))
+    score = np.mean(generate_cross_val_score(classifier, X, y, 20))
     print('local score: {}'.format(score))
 
     # Realizando previsões com o arquivo abalone_app.csv
