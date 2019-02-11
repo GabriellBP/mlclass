@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn import preprocessing
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import cross_val_score, train_test_split
 from sklearn.neighbors import KNeighborsClassifier
@@ -52,9 +53,21 @@ def get_classifier(option=1):
         return MLPClassifier(verbose=0, random_state=0,
                              max_iter=400, solver='sgd', learning_rate='constant', momentum=.9,
                              nesterovs_momentum=True, learning_rate_init=0.2)
-    elif option == 6:  # local score: 0.6577339202766036
+    elif option == 6:  # local score: variable
         # MLP classifier with default params
         return MLPClassifier(max_iter=400)
+    elif option == 7:  # local score: 0.6663418228461675
+        # MLP classifier with default params
+        return MLPClassifier(activation='relu', alpha=1e-05, batch_size='auto',
+                             beta_1=0.9, beta_2=0.999, early_stopping=False,
+                             epsilon=1e-08, hidden_layer_sizes=(15,),
+                             learning_rate='constant', learning_rate_init=0.01,
+                             max_iter=200, momentum=0.9, n_iter_no_change=10,
+                             nesterovs_momentum=True, power_t=0.5, random_state=1,
+                             shuffle=True, solver='lbfgs', tol=0.0001,
+                             validation_fraction=0.1, verbose=False, warm_start=False)
+    elif option == 8:  # local score: 0.6446490001025927
+        return RandomForestClassifier(n_estimators=1000)
 
 
 # def preprocessing(df, columns=None):
@@ -93,7 +106,7 @@ def main():
 
     # Ciando o modelo preditivo para a base trabalhada
     print(' - Criando modelo preditivo')
-    classifier = get_classifier(6)
+    classifier = get_classifier(8)
     classifier.fit(X, y)
 
     # Cross Validation score

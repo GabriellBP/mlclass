@@ -27,6 +27,7 @@ labels = ["constant learning-rate", "constant with momentum",
 def plot_on_dataset(X, y, name):
     # for each dataset, plot learning for each learning strategy
     print("\nlearning on dataset %s" % name)
+    # Normalizing
     X = MinMaxScaler().fit_transform(X)
 
     for label, param in zip(labels, params):
