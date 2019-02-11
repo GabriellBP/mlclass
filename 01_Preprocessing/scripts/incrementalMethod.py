@@ -7,13 +7,14 @@ from random import randrange
 import os
 import datetime
 
-global max_accuracy, method_max_accuracy, can_skip_person, start_at, start_at_turn, start_with_impact
-max_accuracy = 0.86734693877551
-method_max_accuracy = 0.86734693877551
+global max_accuracy, method_max_accuracy, can_skip_person, start_at, start_at_turn, start_with_impact, best_y_pred
+max_accuracy = 0.9030612244898
+method_max_accuracy = 0.9030612244898
 can_skip_person = True
-start_at = 0
+start_at = 59
 start_at_turn = 0
 start_with_impact = False
+best_y_pred = '[0.0,1.0,1.0,1.0,1.0,0.0,1.0,0.0,1.0,0.0,0.0,1.0,0.0,1.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,1.0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,1.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,1.0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,1.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,1.0,0.0,0.0]'
 
 n = 3
 data_app = pd.read_csv('../diabetes_app.csv')
@@ -153,7 +154,7 @@ def incremental_method():
 
 
 def send_request(dataset):
-    global max_accuracy
+    global max_accuracy, best_y_pred
 
     data = dataset
     # Criando X and y par ao algorítmo de aprendizagem de máquina.\
@@ -172,6 +173,10 @@ def send_request(dataset):
     # realizando previsões com o arquivo de
     # print(' - Aplicando modelo e enviando para o servidor')
     y_pred = neigh.predict(data_app)
+
+    if pd.Series(y_pred).to_json(orient='values') == best_y_pred:
+        print('>' * 30, 'SAME ARRAY AS THE BEST ARRAY INTERCEPTED')
+        return {'accuracy': max_accuracy}
 
     # Enviando previsões realizadas com o modelo para o servidor
     URL = 'https://aydanomachado.com/mlclass/01_Preprocessing.php'
@@ -193,6 +198,9 @@ def send_request(dataset):
 
         try:
             if res['accuracy'] is not None:
+                if res['accuracy'] > max_accuracy:
+                    best_y_pred = pd.Series(y_pred).to_json(orient='values')
+                    print('>' * 30, 'NEW best_y_pred:', best_y_pred)
                 break
         except:
             if not got_error:
