@@ -43,28 +43,30 @@ def main():
 
     # Ciando o modelo preditivo para a base trabalhada
     for oob_score in range(2):
-        for min_samples_leaf in range(1, 50):
-            print(' - Criando modelo preditivo')
-            print({'oob_score': oob_score, 'min_samples_leaf': min_samples_leaf, 'n_estimators': 700,
-                   'random_state': 101})
-            classifier = RandomForestClassifier(oob_score=True if oob_score == 1 else False,
-                                                min_samples_leaf=min_samples_leaf,
-                                                n_estimators=700, random_state=101)
-            classifier.fit(X, y)
-            print('score: {}'.format(classifier.score(X, y)))
+        for min_samples_leaf in range(5, 15):
+            for random_state in range(95, 110):
+                print(' - Criando modelo preditivo')
+                print({'oob_score': oob_score, 'min_samples_leaf': min_samples_leaf, 'n_estimators': 700,
+                       'random_state': random_state})
+                classifier = RandomForestClassifier(oob_score=True if oob_score == 1 else False,
+                                                    min_samples_leaf=min_samples_leaf,
+                                                    n_estimators=700, random_state=random_state)
+                classifier.fit(X, y)
+                print('score: {}'.format(classifier.score(X, y)))
 
-            # Cross Validation score
-            score10 = np.mean(generate_cross_val_score(classifier, X, y, 10))
-            score20 = np.mean(generate_cross_val_score(classifier, X, y, 20))
+                # Cross Validation score
+                score10 = np.mean(generate_cross_val_score(classifier, X, y, 10))
+                score20 = np.mean(generate_cross_val_score(classifier, X, y, 20))
 
-            score = (score10 + score20) / 2
-            print('X-val score: {}'.format(score))
-            print()
-            if score > best_score:
-                best_score = score
-                best_params = {'oob_score': oob_score, 'min_samples_leaf': min_samples_leaf, 'n_estimators': 700,
-                               'random_state': 101}
+                score = (score10 + score20) / 2
+                print('X-val score: {}'.format(score))
+                print()
+                if score > best_score:
+                    best_score = score
+                    best_params = {'oob_score': oob_score, 'min_samples_leaf': min_samples_leaf, 'n_estimators': 700,
+                                   'random_state': random_state}
 
+    print('best score:{}'.format(best_score))
     print('best params:{}'.format(best_params))
     print()
 
